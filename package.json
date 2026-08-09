@@ -1,0 +1,28 @@
+{
+  "name": "b-itech",
+  "version": "1.0.0",
+  "description": "Bebegig informasi &amp; teknologi di Al-Ukhuwwah Daarul Mushthofa",
+  "main": "bit.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kobong118/b-itech.git"
+  },
+  "keywords": [
+    "bitech"
+  ],
+  "author": "D'Yusya",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Kobong118/b-itech/issues"
+  },
+  "homepage": "https://github.com/Kobong118/b-itech#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
