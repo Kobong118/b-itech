@@ -4,6 +4,8 @@ allowBuilds:
   bcrypt: true
   sharp: true
 minimumReleaseAge: 2880
+minimumReleaseAgeExclude:
+  - '@next/swc-win32-arm64-msvc@16.3.2'
 onlyBuiltDependencies:
   - bcrypt
   - sharp
