@@ -32,21 +32,27 @@ export async function POST(request: Request) {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // 4. AMBIL TIMESTAMP DATA LAMA DI SUPABASE
-    const { data: existingData } = await supabase
+    // 4. AMBIL TIMESTAMP DATA LAMA DI SUPABASE (CARA BARU YANG AMAN UNTUK TABEL KOSONG)
+    const { data: existingRows, error: fetchError } = await supabase
       .from(target_table)
       .select('updated_at')
-      .eq('id', data.id)
-      .single();
+      .eq('id', data.id); // Kita hapus .single() agar tidak crash jika data kosong
 
-    if (existingData?.updated_at && data.updated_at) {
-      const timeExisting = new Date(existingData.updated_at).getTime();
-      const timeIncoming = new Date(data.updated_at).getTime();
+    // Cek jika ada data lama yang ditemukan di database
+    if (existingRows && existingRows.length > 0) {
+      const existingData = existingRows[0]; // Ambil baris pertama
 
-      if (timeExisting >= timeIncoming) {
-        return NextResponse.json({ message: `Data di tabel '${target_table}' sudah lebih baru.` }, { status: 200 });
+      if (existingData?.updated_at && data.updated_at) {
+        const timeExisting = new Date(existingData.updated_at).getTime();
+        const timeIncoming = new Date(data.updated_at).getTime();
+
+        // Jika data di database sudah lebih baru, batalkan proses masuknya data sheet
+        if (timeExisting >= timeIncoming) {
+          return NextResponse.json({ message: `Data di tabel '${target_table}' sudah lebih baru.` }, { status: 200 });
+        }
       }
     }
+
 
     // 5. UPSERT DATA DINAMIS
     const { error } = await supabase
@@ -55,9 +61,9 @@ export async function POST(request: Request) {
 
     if (error) throw error;
 
-    return NextResponse.json({ 
-      success: true, 
-      message: `Tabel '${target_table}' berhasil diperbarui.` 
+    return NextResponse.json({
+      success: true,
+      message: `Tabel '${target_table}' berhasil diperbarui.`
     });
   } catch (error: any) {
     console.error('Error Sync:', error.message);
