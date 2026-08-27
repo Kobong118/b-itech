@@ -1,31 +1,32 @@
 import {
   BanknotesIcon,
-  ClockIcon,
+  WalletIcon,
   UserGroupIcon,
-  InboxIcon,
+  CreditCardIcon,
 } from '@heroicons/react/24/outline';
 import { lusitana } from '@/app/ui/fonts';
+import { fetchCardData } from '@/app/lib/supabaseQuery';
 
 const iconMap = {
-  collected: BanknotesIcon,
-  customers: UserGroupIcon,
-  pending: ClockIcon,
-  invoices: InboxIcon,
+  cash: BanknotesIcon,
+  jamaah: UserGroupIcon,
+  ewalet: WalletIcon,
+  penabung: CreditCardIcon,
 };
 
 export default async function CardWrapper() {
+  const {
+    numberOfJamaah,
+    numberOfActivePenabung,
+    totalEwalet,
+    totalUangTunai,
+  } = await fetchCardData();
   return (
     <>
-      {/* NOTE: Uncomment this code in Chapter 9 */}
-
-      {/* <Card title="Collected" value={totalPaidInvoices} type="collected" />
-      <Card title="Pending" value={totalPendingInvoices} type="pending" />
-      <Card title="Total Invoices" value={numberOfInvoices} type="invoices" />
-      <Card
-        title="Total Customers"
-        value={numberOfCustomers}
-        type="customers"
-      /> */}
+      <Card title="Total Jamaah Tour ADM" value={numberOfJamaah} type="jamaah" />
+      <Card title="Penabung Aktif" value={numberOfActivePenabung} type="penabung" />
+      <Card title="Total E-Wallet" value={totalEwalet} type="ewalet" />
+      <Card title="Total Uang Tunai" value={totalUangTunai} type="cash" />
     </>
   );
 }
@@ -37,7 +38,7 @@ export function Card({
 }: {
   title: string;
   value: number | string;
-  type: 'invoices' | 'customers' | 'pending' | 'collected';
+  type: 'jamaah' | 'penabung' | 'ewalet' | 'cash';
 }) {
   const Icon = iconMap[type];
 

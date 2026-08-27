@@ -1,13 +1,13 @@
-import Pagination from '@/app/ui/invoices/pagination';
+// komponen pagination untuk menavigasi halaman data mutasi
+import Pagination from '@/app/ui/mutasi/no-halaman';
 import Search from '@/app/ui/search';
-import Table from '@/app/ui/invoices/table';
-import { CreateInvoice } from '@/app/ui/invoices/buttons';
+import Table from '@/app/ui/mutasi/tabel';
 import { lusitana } from '@/app/ui/fonts';
 import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
 import { Suspense } from 'react';
-// mengambil data di sisi server, dan meneruskannya ke komponen sebagai prop
-import { fetchInvoicesPages } from '@/app/lib/data';
- 
+import { fetchTabunganPages } from '@/app/lib/supabaseQuery';
+import { CreateInvoice } from '@/app/ui/invoices/buttons';
+
 export default async function Page(props: {
   searchParams?: Promise<{
     query?: string;
@@ -17,14 +17,14 @@ export default async function Page(props: {
   const searchParams = await props.searchParams;
   const query = searchParams?.query || '';
   const currentPage = Number(searchParams?.page) || 1;
-  const totalPages = await fetchInvoicesPages(query);
+  const totalPages = await fetchTabunganPages(query);
   return (
     <div className="w-full">
       <div className="flex w-full items-center justify-between">
-        <h1 className={`${lusitana.className} text-2xl`}>Invoices</h1>
+        <h1 className={`${lusitana.className} text-2xl`}>Mutasi</h1>
       </div>
       <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
-        <Search placeholder="Search invoices..." />
+        <Search placeholder="Search mutasi..." />
         <CreateInvoice />
       </div>
        <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
