@@ -19,7 +19,6 @@
         "name": "next"
       }
     ],
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
       "@/lib/*": ["./app/lib/*"]
