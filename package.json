@@ -21,7 +21,6 @@
     "react": "latest",
     "react-dom": "latest",
     "tailwindcss": "3.4.17",
-    "typescript": "5.7.3",
     "use-debounce": "^10.0.6",
     "zod": "^3.25.17"
   },
@@ -30,6 +29,7 @@
     "@types/node": "22.10.7",
     "@types/react": "19.0.7",
     "@types/react-dom": "19.0.3",
-    "baseline-browser-mapping": "^2.11.17"
+    "baseline-browser-mapping": "^2.11.17",
+    "typescript": "7.0.2"
   }
 }
