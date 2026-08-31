@@ -1,6 +1,6 @@
 'use client';
 import {
-  UserGroupIcon,
+  TicketIcon,
   HomeIcon,
   DocumentDuplicateIcon,
   ArrowsRightLeftIcon
@@ -10,14 +10,9 @@ import {usePathname} from 'next/navigation';
 import clsx from 'clsx';
  
 const links = [
-  { name: 'Home', href: '/dashboard', icon: HomeIcon },
-  {
-    name: 'Invoices',
-    href: '/dashboard/invoices',
-    icon: DocumentDuplicateIcon,
-  },
-  { name: 'Customers', href: '/dashboard/customers', icon: UserGroupIcon },
-  { name: 'Mutasi', href: '/dashboard/mutasi', icon: ArrowsRightLeftIcon }
+  { name: 'Home', href: '/tabungan', icon: HomeIcon },
+  { name: 'Acara', href: '/tabungan/acara', icon: TicketIcon },
+  { name: 'Mutasi', href: '/tabungan/mutasi', icon: ArrowsRightLeftIcon }
 ];
 
 export default function NavLinks() {

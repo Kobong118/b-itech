@@ -96,46 +96,67 @@ export async function getMonthlyTabungan() {
 
 export async function fetchLatestTabungan() {
   try {
-    const { data, error } = await supabase
+    // 1. Ambil seluruh transaksi untuk menghitung akumulasi saldo secara urut
+    const { data: allData, error } = await supabase
       .from('ctt_tabungan')
       .select(`
         id,
         id_name,
         setor_tunai,
         setor_e_walet,
+        tarik_tunai,
+        tarik_e_walet,
         update_at,
         data_jamaah (
           nama,
-          no_rek
+          no_rek,
+          jenis_kelamin
         )
       `)
-      .order('update_at', { ascending: false })
-      .limit(5);
+      .order('update_at', { ascending: true }); // Diurutkan dari yang tertua (ascending)
 
     if (error) {
       console.error('Supabase Query Error:', error);
       throw error;
     }
 
-    if (!data) return [];
+    if (!allData || allData.length === 0) return [];
 
-    return data.map((item: any) => {
-      const totalSetor = Number(item.setor_tunai || 0) + Number(item.setor_e_walet || 0);
+    // 2. Map & hitung Running Balance (Sisa Saldo Akumulatif) per jamaah
+    const jamaahBalanceMap: { [key: string]: number } = {};
 
-      // Handle jika data_jamaah dikembalikan sebagai Object maupun Array
-      const jamaahObj = Array.isArray(item.data_jamaah) 
-        ? item.data_jamaah[0] 
+    const processedData = allData.map((item: any) => {
+      const jamaahObj = Array.isArray(item.data_jamaah)
+        ? item.data_jamaah[0]
         : item.data_jamaah;
+
+      const jamaahKey = item.id_name || jamaahObj?.nama || 'unknown';
+
+      // Hitung perubahan pada transaksi ini
+      const totalSetor = Number(item.setor_tunai || 0) + Number(item.setor_e_walet || 0);
+      const totalTarik = Number(item.tarik_tunai || 0) + Number(item.tarik_e_walet || 0);
+      const netChange = totalSetor - totalTarik;
+
+      // Akumulasikan ke saldo berjalan (running balance) jamaah
+      const currentBalance = (jamaahBalanceMap[jamaahKey] || 0) + netChange;
+      jamaahBalanceMap[jamaahKey] = currentBalance;
 
       return {
         id: item.id,
         id_name: item.id_name,
         nama: jamaahObj?.nama || 'Tanpa Nama',
         rek: jamaahObj?.no_rek || '-',
-        amount: formatCurrency(totalSetor),
+        jenis_kelamin: jamaahObj?.jenis_kelamin || '',
+        amount: formatCurrency(currentBalance), // Sisa Saldo Akumulatif setelah transaksi ini,
+        lastSetor: formatCurrency(totalSetor),
+        lastTarik: formatCurrency(totalTarik),
         date: item.update_at,
       };
     });
+
+    // 3. Urutkan kembali dari yang terbaru & ambil 5 transaksi terakhir
+    return processedData.reverse().slice(0, 5);
+
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch the latest tabungan data.');
