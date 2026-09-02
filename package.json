@@ -22,7 +22,8 @@
     "react-dom": "latest",
     "tailwindcss": "3.4.17",
     "use-debounce": "^10.0.6",
-    "zod": "^3.25.17"
+    "zod": "^3.25.17",    
+    "@capacitor/push-notifications": "^8.1.2"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
