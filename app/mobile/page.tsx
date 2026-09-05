@@ -4,33 +4,32 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
-import { signOut } from '@/auth';
 import { PowerIcon } from '@heroicons/react/24/outline';
+import { handleSignOut } from '@/app/lib/aksi';
 
 export default function Page() {
   const router = useRouter();
 
   useEffect(() => {
     const initPushNotifications = async () => {
-      // Pastikan hanya berjalan di platform Android/iOS Native (bukan browser web biasa)
+      // Pastikan hanya berjalan di platform Android/iOS Native
       if (!Capacitor.isNativePlatform()) {
         console.log('Bukan platform native, lewati registrasi Push Notification');
         return;
       }
 
       try {
-        // 1. Buat Android Notification Channel dengan tingkat urgensi HIGH (5)
-        // Ini memastikan notifikasi tetap tampil di status bar & sebagai banner saat app terbuka
+        // 1. Buat Android Notification Channel
         await PushNotifications.createChannel({
           id: 'default',
           name: 'Notifikasi Utama',
           description: 'Channel untuk notifikasi umum B ITech ADM',
-          importance: 5, // 5 = HIGH/CRITICAL (Pop-up banner + Suara/Getar)
-          visibility: 1, // Public notification
+          importance: 5,
+          visibility: 1,
           vibration: true,
         });
 
-        // 2. Minta izin notifikasi ke pengguna
+        // 2. Minta izin notifikasi
         let permStatus = await PushNotifications.checkPermissions();
 
         if (permStatus.receive === 'prompt' || permStatus.receive === 'prompt-with-rationale') {
@@ -44,34 +43,30 @@ export default function Page() {
           console.warn('Izin notifikasi ditolak oleh pengguna');
         }
 
-        // 4. Dapatkan Token FCM (Akan kita simpan ke Supabase di tahap berikutnya)
+        // 4. Dapatkan Token FCM
         await PushNotifications.addListener('registration', (token) => {
           console.log('>>> FCM Token Kamu:', token.value);
-          // TODO: Simpan token.value ke tabel user_fcm_tokens di Supabase
         });
 
         await PushNotifications.addListener('registrationError', (err) => {
           console.error('Gagal mendaftarkan FCM:', err.error);
         });
 
-        // 5. Handle ketika notifikasi diterima saat app SEDANG TERBUKA (Foreground)
+        // 5. Listener saat app terbuka (Foreground)
         await PushNotifications.addListener('pushNotificationReceived', (notification) => {
           console.log('Notifikasi diterima saat app terbuka:', notification);
         });
 
-        // 6. Handle KLIK NOTIFIKASI -> Pindah ke Halaman Spesifik
+        // 6. Listener saat notifikasi diklik
         await PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
           console.log('Notifikasi diklik:', action);
-          
-          // Mengambil data custom URL payload dari FCM (contoh payload: { "url": "/mobile/orders/123" })
           const targetUrl = action.notification.data?.url;
-          
+
           if (targetUrl) {
             console.log('Mengarahkan ke halaman:', targetUrl);
-            router.push(targetUrl); // Menggunakan Next.js Router untuk navigasi seamless
+            router.push(targetUrl);
           }
         });
-
       } catch (error) {
         console.error('Error pada Push Notification setup:', error);
       }
@@ -79,7 +74,7 @@ export default function Page() {
 
     initPushNotifications();
 
-    // Cleanup listeners saat komponen unmount
+    // Cleanup listeners
     return () => {
       if (Capacitor.isNativePlatform()) {
         PushNotifications.removeAllListeners();
@@ -88,22 +83,20 @@ export default function Page() {
   }, [router]);
 
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-4 p-4">
-      <h1 className="text-2xl font-bold">Mobile Page</h1>
+    <div className="flex h-full min-h-screen flex-col items-center justify-center gap-4 p-4 bg-slate-50">
+      <h1 className="text-2xl font-bold text-slate-800">Mobile Page</h1>
       <p className="text-gray-600">Aplikasi B ITech ADM siap menerima notifikasi.</p>
-    </div>
-    
-  );
 
-  <form
-          action={async () => {
-            'use server';
-            await signOut({ redirectTo: '/' });
-          }}
+      {/* Form Logout Menggunakan Server Action */}
+      <form action={handleSignOut} className="w-full max-w-xs mt-4">
+        <button
+          type="submit"
+          className="flex h-[48px] w-full items-center justify-center gap-2 rounded-md bg-white border border-gray-200 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 shadow-sm transition"
         >
-          <button className="flex h-[48px] w-full grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3">
-            <PowerIcon className="w-6" />
-            <div className="hidden md:block">Sign Out</div>
-          </button>
-        </form>
+          <PowerIcon className="w-6" />
+          <span>Sign Out</span>
+        </button>
+      </form>
+    </div>
+  );
 }

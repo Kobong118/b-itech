@@ -3,6 +3,7 @@
 import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
 import { checkNamaExists, insertNewJamaah } from './supabaseQuery';
+import { signOut } from '@/auth';
  
 // ...
  
@@ -68,4 +69,8 @@ export async function authenticateMobile(
     }
     throw error;
   }
+}
+
+export async function handleSignOut() {
+  await signOut({ redirectTo: '/' });
 }
