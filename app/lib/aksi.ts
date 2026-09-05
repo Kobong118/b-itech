@@ -11,7 +11,7 @@ export async function authenticate(
   formData: FormData,
 ) {
   try {
-    await signIn('credentials', formData);
+    await signIn('panitia-credentials', formData);
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
@@ -49,4 +49,23 @@ export async function daftarJamaah(formData:{nama: string, kontak: number, jenis
       jenis_kelamin: formData.jenis_kelamin
     });
     return insertResult;
+}
+
+export async function authenticateMobile(
+  prevState: string | undefined,
+  formData: FormData,
+) {
+  try {
+    await signIn('jamaah-credentials', formData);
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case 'CredentialsSignin':
+          return 'Data jamaah tidak ditemukan. Silakan periksa kembali.';
+        default:
+          return 'Terjadi kesalahan saat masuk.';
+      }
+    }
+    throw error;
+  }
 }

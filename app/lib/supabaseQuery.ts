@@ -417,11 +417,19 @@ export async function insertNewJamaah(jamaahData: {
 export async function getJamaahIdByIdentitas(identitas: string) {
   try {
     const cleanInput = identitas.trim();
-    const { data, error } = await supabase
-      .from('data_jamaah')
-      .select('id')
-      .or(`kontak.eq.${cleanInput},nama.ilike.%${cleanInput}%`)
-      .maybeSingle();
+    if (!cleanInput) return null;
+
+    const isNumeric = /^\d+$/.test(cleanInput);
+    let query = supabase.from('data_jamaah').select('id');
+
+    if (isNumeric) {
+      query = query.eq('kontak', Number(cleanInput));
+    } else {
+      query = query.ilike('nama', `%${cleanInput}%`);
+    }
+
+    // Batasi ke 1 baris
+    const { data, error } = await query.limit(1).maybeSingle();
 
     if (error) {
       console.error('Error getJamaahIdByIdentitas:', error);

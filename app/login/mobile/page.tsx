@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useActionState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
+import { authenticateMobile } from '@/app/lib/aksi';
 import {
   syncJamaahFcmToken,
   checkNamaExists,
@@ -14,22 +15,28 @@ import {
 
 export default function MobileLoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/mobile';
+
   const [isRegister, setIsRegister] = useState(false);
 
-  // State Input Login
-  const [identitas, setIdentitas] = useState('');
+  // State Server Action untuk Login
+  const [errorMessage, formAction, isPending] = useActionState(
+    authenticateMobile,
+    undefined,
+  );
 
   // State Input Pendaftaran
   const [nama, setNama] = useState('');
   const [kontak, setKontak] = useState('');
   const [jenisKelamin, setJenisKelamin] = useState('Laki-laki');
 
-  // State UI
+  // State UI Tambahan
   const [fcmToken, setFcmToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [regLoading, setRegLoading] = useState(false);
+  const [regErrorMessage, setRegErrorMessage] = useState('');
 
-  // 1. Ambil FCM Token jika berjalan di Mobile Native (Android)
+  // 1. Ambil FCM Token jika berjalan di Mobile Native
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
       PushNotifications.addListener('registration', (token) => {
@@ -45,64 +52,42 @@ export default function MobileLoginPage() {
     }
   };
 
-  // 3. Handler Submit Login via NextAuth
-  const handleLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setErrorMessage('');
+  // 3. Sync Token otomatis saat login berhasil diproses
+  const handleLoginSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const formData = new FormData(e.currentTarget);
+    const identitasVal = formData.get('identitas')?.toString();
 
-    try {
-      const res = await signIn('credentials', {
-        identitas,
-        redirect: false,
-      });
-
-      if (res?.error) {
-        setErrorMessage('Data jamaah tidak ditemukan. Silakan periksa kembali atau daftar.');
-      } else if (res?.ok) {
-        // Ambil ID jamaah via helper module
-        const jamaahId = await getJamaahIdByIdentitas(identitas);
-
-        if (jamaahId) {
-          await handleSyncToken(jamaahId);
-        }
-
-        router.push('/mobile');
-        router.refresh();
+    if (identitasVal) {
+      const jamaahId = await getJamaahIdByIdentitas(identitasVal);
+      if (jamaahId) {
+        await handleSyncToken(jamaahId);
       }
-    } catch (err) {
-      console.error('Error login:', err);
-      setErrorMessage('Terjadi kesalahan koneksi.');
-    } finally {
-      setLoading(false);
     }
   };
 
   // 4. Handler Submit Pendaftaran Jamaah Baru
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setErrorMessage('');
+    setRegLoading(true);
+    setRegErrorMessage('');
 
     try {
       const namaTrim = nama.trim();
       const kontakNum = Number(kontak.trim());
 
       if (isNaN(kontakNum)) {
-        setErrorMessage('Nomor WhatsApp harus berupa angka.');
-        setLoading(false);
+        setRegErrorMessage('Nomor WhatsApp harus berupa angka.');
+        setRegLoading(false);
         return;
       }
 
-      // Cek apakah nama sudah terdaftar
       const isExist = await checkNamaExists(namaTrim);
       if (isExist) {
-        setErrorMessage('Nama ini sudah terdaftar. Silakan gunakan nama lain atau login.');
-        setLoading(false);
+        setRegErrorMessage('Nama ini sudah terdaftar. Silakan gunakan nama lain atau login.');
+        setRegLoading(false);
         return;
       }
 
-      // Insert jamaah baru
       const res = await insertNewJamaah({
         nama: namaTrim,
         kontak: kontakNum,
@@ -110,25 +95,19 @@ export default function MobileLoginPage() {
       });
 
       if (res.success && res.jamaah) {
-        // Auto-login menggunakan NextAuth
-        const loginRes = await signIn('credentials', {
-          identitas: String(kontakNum),
-          redirect: false,
-        });
-
-        if (loginRes?.ok) {
+        if (res.jamaah.id) {
           await handleSyncToken(Number(res.jamaah.id));
-          router.push('/mobile');
-          router.refresh();
         }
+        router.push('/mobile');
+        router.refresh();
       } else {
-        setErrorMessage(res.message);
+        setRegErrorMessage(res.message);
       }
     } catch (err) {
       console.error('Error register:', err);
-      setErrorMessage('Gagal memproses pendaftaran jamaah baru.');
+      setRegErrorMessage('Gagal memproses pendaftaran jamaah baru.');
     } finally {
-      setLoading(false);
+      setRegLoading(false);
     }
   };
 
@@ -147,36 +126,39 @@ export default function MobileLoginPage() {
           </p>
         </div>
 
-        {/* Alert Message Error */}
-        {errorMessage && (
+        {/* Alert Error Message */}
+        {(errorMessage || regErrorMessage) && (
           <div className="mb-4 rounded-xl bg-red-50 p-3 text-xs font-medium text-red-600 border border-red-100 text-center">
-            {errorMessage}
+            {isRegister ? regErrorMessage : errorMessage}
           </div>
         )}
 
-        {/* Form Login */}
+        {/* Form Login (Menggunakan Server Action & useActionState) */}
         {!isRegister ? (
-          <form onSubmit={handleLoginSubmit} className="space-y-4">
+          <form action={formAction} onSubmit={handleLoginSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="identitas">
                 No. WhatsApp / Nama Jamaah
               </label>
               <input
+                id="identitas"
+                name="identitas"
                 type="text"
                 required
                 placeholder="Contoh: 08123456789 atau Ahmad"
-                value={identitas}
-                onChange={(e) => setIdentitas(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
               />
             </div>
 
+            {/* Input Redirect URL Tersembunyi */}
+            <input type="hidden" name="redirectTo" value={callbackUrl} />
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={isPending}
               className="w-full rounded-xl bg-blue-600 p-3 text-sm font-semibold text-white shadow-md shadow-blue-200 transition hover:bg-blue-700 active:scale-[0.98] disabled:opacity-50"
             >
-              {loading ? 'Memproses...' : 'Masuk Aplikasi'}
+              {isPending ? 'Memproses...' : 'Masuk Aplikasi'}
             </button>
 
             <div className="pt-2 text-center">
@@ -184,10 +166,7 @@ export default function MobileLoginPage() {
                 Belum terdaftar?{' '}
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsRegister(true);
-                    setErrorMessage('');
-                  }}
+                  onClick={() => setIsRegister(true)}
                   className="font-bold text-blue-600 hover:underline"
                 >
                   Daftar di sini
@@ -242,10 +221,10 @@ export default function MobileLoginPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={regLoading}
               className="w-full rounded-xl bg-emerald-600 p-3 text-sm font-semibold text-white shadow-md shadow-emerald-200 transition hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-50"
             >
-              {loading ? 'Mendaftarkan...' : 'Daftar & Masuk'}
+              {regLoading ? 'Mendaftarkan...' : 'Daftar & Masuk'}
             </button>
 
             <div className="pt-2 text-center">
@@ -253,10 +232,7 @@ export default function MobileLoginPage() {
                 Sudah terdaftar?{' '}
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsRegister(false);
-                    setErrorMessage('');
-                  }}
+                  onClick={() => setIsRegister(false)}
                   className="font-bold text-blue-600 hover:underline"
                 >
                   Kembali ke Login
