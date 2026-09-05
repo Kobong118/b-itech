@@ -26,12 +26,33 @@ export async function getPanitiaByNamaPengguna(nama_pengguna: string): Promise<P
     }
 }
 
+export async function getJamaahByIdentitas(identitas: string) {
+    try {
+        const cleanInput = identitas.trim();
+        const { data, error } = await supabase
+            .from('data_jamaah')
+            .select('*')
+            .or(`nama.ilike.%${cleanInput}%`)
+            .limit(1)
+            .maybeSingle();
+
+        if (error) {
+            console.error('Failed to fetch jamaah:', error);
+            return null;
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error fetching jamaah data:', error);
+        return null;
+    }
+}
+
 export const { auth, signIn, signOut } = NextAuth({
     ...authConfig,
     providers: [
         Credentials({
             async authorize(credentials) {
-                console.log('Credentials diterima:', credentials);
                 const parsedCredentials = z
                     .object({
                         nama_pengguna: z.string(),
@@ -40,22 +61,16 @@ export const { auth, signIn, signOut } = NextAuth({
                     .safeParse(credentials);
 
                 if (!parsedCredentials.success) {
-                    console.log('Zod validation failed:', parsedCredentials.error.format());
                     return null;
                 }
 
                 if (parsedCredentials.success) {
                     const { nama_pengguna, kata_sandi } = parsedCredentials.data;
-                    console.log(nama_pengguna, kata_sandi);
                     // Cari panitia berdasarkan nama pengguna
                     const panitia = await getPanitiaByNamaPengguna(nama_pengguna);
                     if (!panitia) {
-                        console.log('Panitia tidak ditemukan');
                         return null;
                     }
-
-                    console.log('Data Panitia dari DB:', panitia);
-                    console.log('Kata Sandi Input vs DB:', kata_sandi, panitia.kata_sandi);
                     // Bandingkan kata sandi
                     const passwordsMatch = await bcrypt.compare(kata_sandi, panitia.kata_sandi);
 
@@ -70,5 +85,31 @@ export const { auth, signIn, signOut } = NextAuth({
                 console.log('Invalid credentials');
                 return null;
             },
-        }),],
+        }),
+        Credentials({
+            async authorize(credentials) {
+                const parsedCredentials = z
+                    .object({ identitas: z.string() })
+                    .safeParse(credentials);
+
+                if (parsedCredentials.success) {
+                    const { identitas } = parsedCredentials.data;
+
+                    const jamaah = await getJamaahByIdentitas(identitas);
+
+                    if (jamaah) {
+                        return {
+                            id: String(jamaah.id),
+                            name: jamaah.nama,
+                            // Ubah number/null menjadi string agar sesuai skema NextAuth User
+                            email: jamaah.kontak ? String(jamaah.kontak) : null,
+                            role: 'jamaah',
+                        };
+                    }
+                }
+
+                return null;
+            },
+        }),
+    ],
 });

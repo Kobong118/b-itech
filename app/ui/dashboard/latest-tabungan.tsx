@@ -1,11 +1,11 @@
 import { lusitana } from '@/app/ui/fonts';
-import { ArrowPathIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/outline';
 import { fetchLatestTabungan } from '@/app/lib/supabaseQuery';
 import Image from 'next/image';
 
 export default async function LatestTabungan() {
   const latestTabungan = await fetchLatestTabungan();
-   // 1. Logika Avatar Dinamis berdasarkan jenis_kelamin
+  // 1. Logika Avatar Dinamis berdasarkan jenis_kelamin
   const gender = latestTabungan[0]?.jenis_kelamin?.toLowerCase() || '';
   const isLaki = gender.includes('laki') || gender.includes('pria') || gender.includes('male');
   const avatarSrc = isLaki ? '/jamaah/akhi.jpg' : '/jamaah/ukhti.jpg';
@@ -24,7 +24,7 @@ export default async function LatestTabungan() {
                 }`}
             >
               <div className="flex items-center min-w-0">
-                <div className="min-w-0 flex items-center">                  
+                <div className="min-w-0 flex items-center">
                   <Image
                     src={avatarSrc}
                     className="mr-2 rounded-full object-cover"
@@ -34,33 +34,39 @@ export default async function LatestTabungan() {
                     alt={`${item.nama || 'Jamaah'}'s profile picture`}
                   />
                   <div className="flex flex-col min-w-0">
-                   <p className="truncate text-sm font-semibold md:text-base">
-                     {item.nama}
-                   </p>
+                    <p className="truncate text-sm font-semibold md:text-base">
+                      {item.nama}
+                    </p>
                     <p className="text-sm text-gray-500">
-                   Total Tabungan: {item.amount}
-                   </p>
+                      Total Tabungan: {item.amount}
+                    </p>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center">                
-                <p
-                  className={`${lusitana.className} truncate text-sm font-medium md:text-base`}
-                >
-                  {item.lastSetor !== '0' ? item.lastSetor : item.lastTarik}
-                </p>
-                {item.lastSetor !== '0' ? (
-                  <ArrowTrendingUpIcon className="h-5 w-5 text-green-500" />
-                ) : (
-                  <ArrowTrendingDownIcon className="h-5 w-5 text-red-500" />
-                )}
-              </div>
+              {(() => {
+                // Langsung cek angka murni dari backend
+                const isSetor = item.rawSetor > 0;
+                const displayAmount = isSetor ? item.lastSetor : item.lastTarik;
+
+                return (
+                  <div className="flex items-center gap-1">
+                    <p className={`${lusitana.className} truncate text-sm font-medium md:text-base`}>
+                      {displayAmount}
+                    </p>
+                    {isSetor ? (
+                      <ArrowUpIcon className="h-5 w-5 text-green-500" />
+                    ) : (
+                      <ArrowDownIcon className="h-5 w-5 text-red-500" />
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           ))}
         </div>
         <div className="flex items-center pb-2 pt-6">
           <ArrowPathIcon className="h-5 w-5 text-gray-500" />
-          <h3 className="ml-2 text-sm text-gray-500">Baru saja diperbarui</h3>
+          <h3 className="ml-2 text-sm text-gray-500">Di perbarui pada {latestTabungan[0].date }</h3>
         </div>
       </div>
     </div>

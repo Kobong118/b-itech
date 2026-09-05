@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient';
 import { Database } from '@/types/database.types';
-import { formatCurrency } from './utils'; // Menggunakan formatCurrency bawaan project
+import { formatCurrency, formatDateToLocal } from './utils'; // Menggunakan formatCurrency bawaan project
 
 export type TableName = keyof Database['public']['Tables'];
 export type TableRow<T extends TableName> = Database['public']['Tables'][T]['Row'];
@@ -150,13 +150,14 @@ export async function fetchLatestTabungan() {
         amount: formatCurrency(currentBalance), // Sisa Saldo Akumulatif setelah transaksi ini,
         lastSetor: formatCurrency(totalSetor),
         lastTarik: formatCurrency(totalTarik),
-        date: item.update_at,
+        rawSetor: totalSetor,
+        rawTarik: totalTarik,
+        date: formatDateToLocal(item.update_at)
       };
     });
 
     // 3. Urutkan kembali dari yang terbaru & ambil 5 transaksi terakhir
     return processedData.reverse().slice(0, 5);
-
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch the latest tabungan data.');
@@ -331,5 +332,105 @@ export async function fetchTabunganPages(query: string) {
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch total number of tabungan pages.');
+  }
+}
+
+export const syncJamaahFcmToken = async (fcmToken : string, jamaahId: number) => {
+  if (!jamaahId || !fcmToken) return;
+
+  try {
+    const { data, error } = await supabase
+      .from('user_fcm_tokens')
+      .upsert(
+        {
+          jamaah_id: jamaahId, // Tipe int8
+          fcm_token: fcmToken,
+          device_type: 'android',
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'fcm_token' } // Mengupdate record jika token sudah terdaftar
+      );
+
+    if (error) {
+      console.error('Gagal sync token ke Supabase:', error.message);
+    } else {
+      console.log('FCM Token jamaah berhasil diperbarui di Supabase');
+    }
+  } catch (err) {
+    console.error('Error pada syncJamaahFcmToken:', err);
+  }
+};
+
+// Cek apakah nama sudah ada di tabel data_jamaah
+export async function checkNamaExists(nama: string) {
+  try {
+    const { data, error } = await supabase
+      .from('data_jamaah')
+      .select('id')
+      .eq('nama', nama)
+      .single();
+
+    if (error) {
+      console.error('Error checking nama exists:', error);
+      throw new Error('Failed to check if nama exists.');
+    }
+
+    return !!data;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to check if nama exists.');
+  }
+}
+
+// Insert Jamaah Baru ke data_jamaah
+export async function insertNewJamaah(jamaahData: {
+  nama: string;
+  kontak: number;
+  jenis_kelamin: string;
+}) {
+  try {
+    const { data, error } = await supabase
+      .from('data_jamaah')
+      .insert({
+        nama: jamaahData.nama,
+        kontak: jamaahData.kontak,
+        jenis_kelamin: jamaahData.jenis_kelamin
+      })
+      .select('*')
+      .single();
+    if (error) {
+      console.error('Error insert jamaah:', error);
+      return { success: false, message: 'Gagal mendaftarkan jamaah baru.' };
+    }
+
+    return {
+      success: true,
+      message: 'Pendaftaran berhasil!',
+      jamaah: data
+    };
+  } catch (error) {
+    console.error('Error pada insertNewJamaah:', error);
+    throw new Error('Failed to insert new jamaah.');
+  }
+}
+
+export async function getJamaahIdByIdentitas(identitas: string) {
+  try {
+    const cleanInput = identitas.trim();
+    const { data, error } = await supabase
+      .from('data_jamaah')
+      .select('id')
+      .or(`kontak.eq.${cleanInput},nama.ilike.%${cleanInput}%`)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error getJamaahIdByIdentitas:', error);
+      return null;
+    }
+
+    return data?.id ? Number(data.id) : null;
+  } catch (error) {
+    console.error('Database Error:', error);
+    return null;
   }
 }
