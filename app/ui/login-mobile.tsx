@@ -34,23 +34,60 @@ export default function LoginForm() {
   const [regLoading, setRegLoading] = useState(false);
   const [regErrorMessage, setRegErrorMessage] = useState('');
 
-  // 1. Ambil FCM Token jika berjalan di Mobile Native
+  // 1. Inisialisasi & Ambil FCM Token
   useEffect(() => {
+    const initPushNotifications = async () => {
+      if (Capacitor.isNativePlatform()) {
+        try {
+          // Minta izin notifikasi
+          let permStatus = await PushNotifications.checkPermissions();
+          if (permStatus.receive === 'prompt') {
+            permStatus = await PushNotifications.requestPermissions();
+          }
+
+          if (permStatus.receive === 'granted') {
+            // Register ke FCM/APNS
+            await PushNotifications.register();
+          }
+        } catch (err) {
+          console.error('Error inisialisasi push notification:', err);
+        }
+      }
+    };
+
+    // Listener pendaftaran token
+    let tokenListener: any;
     if (Capacitor.isNativePlatform()) {
-      PushNotifications.addListener('registration', (token) => {
+      tokenListener = PushNotifications.addListener('registration', (token) => {
+        console.log('FCM Token didapat:', token.value);
         setFcmToken(token.value);
       });
+
+      initPushNotifications();
     }
+
+    return () => {
+      if (tokenListener) {
+        tokenListener.remove();
+      }
+    };
   }, []);
 
-  // 2. Helper Sinkronisasi FCM Token
-  const handleSyncToken = async (jamaahId: number) => {
-    if (fcmToken && jamaahId) {
-      await syncJamaahFcmToken(fcmToken, jamaahId);
+  // 2. Helper Sinkronisasi FCM Token ke Database
+  const handleSyncToken = async (jamaahId: number, tokenToSync?: string | null) => {
+    const activeToken = tokenToSync || fcmToken;
+    if (activeToken && jamaahId) {
+      console.log(`Mengirim FCM token ke DB untuk jamaah_id: ${jamaahId}`);
+      await syncJamaahFcmToken(activeToken, jamaahId);
+    } else {
+      console.warn('Gagal sync FCM Token: Token atau Jamaah ID tidak tersedia.', {
+        activeToken,
+        jamaahId,
+      });
     }
   };
 
-  // 3. Sync Token otomatis saat login
+  // 3. Sync Token otomatis saat submit login
   const handleLoginSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     const formData = new FormData(e.currentTarget);
     const identitasVal = formData.get('identitas')?.toString();

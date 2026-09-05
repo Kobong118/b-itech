@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
+import { signOut } from '@/auth';
+import { PowerIcon } from '@heroicons/react/24/outline';
 
 export default function Page() {
   const router = useRouter();
@@ -90,5 +92,18 @@ export default function Page() {
       <h1 className="text-2xl font-bold">Mobile Page</h1>
       <p className="text-gray-600">Aplikasi B ITech ADM siap menerima notifikasi.</p>
     </div>
+    
   );
+
+  <form
+          action={async () => {
+            'use server';
+            await signOut({ redirectTo: '/' });
+          }}
+        >
+          <button className="flex h-[48px] w-full grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3">
+            <PowerIcon className="w-6" />
+            <div className="hidden md:block">Sign Out</div>
+          </button>
+        </form>
 }

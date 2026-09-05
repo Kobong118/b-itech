@@ -75,6 +75,7 @@ export type Database = {
       }
       data_jamaah: {
         Row: {
+          fcm_token: string | null
           id: number
           jenis_kelamin: string | null
           kontak: number | null
@@ -87,6 +88,7 @@ export type Database = {
           update_by: string | null
         }
         Insert: {
+          fcm_token?: string | null
           id?: number
           jenis_kelamin?: string | null
           kontak?: number | null
@@ -99,6 +101,7 @@ export type Database = {
           update_by?: string | null
         }
         Update: {
+          fcm_token?: string | null
           id?: number
           jenis_kelamin?: string | null
           kontak?: number | null

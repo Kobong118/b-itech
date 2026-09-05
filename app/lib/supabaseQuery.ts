@@ -335,31 +335,26 @@ export async function fetchTabunganPages(query: string) {
   }
 }
 
-export const syncJamaahFcmToken = async (fcmToken : string, jamaahId: number) => {
-  if (!jamaahId || !fcmToken) return;
-
+export async function syncJamaahFcmToken(fcmToken: string, jamaahId: number) {
   try {
     const { data, error } = await supabase
-      .from('user_fcm_tokens')
-      .upsert(
-        {
-          jamaah_id: jamaahId, // Tipe int8
-          fcm_token: fcmToken,
-          device_type: 'android',
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'fcm_token' } // Mengupdate record jika token sudah terdaftar
-      );
+      .from('data_jamaah')
+      .update({ fcm_token: fcmToken })
+      .eq('id', jamaahId)
+      .select();
 
     if (error) {
-      console.error('Gagal sync token ke Supabase:', error.message);
-    } else {
-      console.log('FCM Token jamaah berhasil diperbarui di Supabase');
+      console.error('Error updating FCM token in Supabase:', error);
+      return false;
     }
+
+    console.log('FCM token berhasil diperbarui di database:', data);
+    return true;
   } catch (err) {
-    console.error('Error pada syncJamaahFcmToken:', err);
+    console.error('Database Error pada syncJamaahFcmToken:', err);
+    return false;
   }
-};
+}
 
 // Cek apakah nama sudah ada di tabel data_jamaah
 export async function checkNamaExists(nama: string) {
