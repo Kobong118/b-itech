@@ -359,53 +359,57 @@ export async function syncJamaahFcmToken(fcmToken: string, jamaahId: number) {
 // Cek apakah nama sudah ada di tabel data_jamaah
 export async function checkNamaExists(nama: string) {
   try {
+    const cleanNama = nama.trim();
+    if (!cleanNama) return false;
+
     const { data, error } = await supabase
       .from('data_jamaah')
       .select('id')
-      .eq('nama', nama)
-      .single();
+      .ilike('nama', cleanNama) // Menggunakan ilike agar tidak sensitif huruf besar/kecil
+      .maybeSingle(); // <-- Gunakan maybeSingle(), bukan single()
 
     if (error) {
       console.error('Error checking nama exists:', error);
-      throw new Error('Failed to check if nama exists.');
+      return false;
     }
 
-    return !!data;
+    return !!data; // Mengembalikan true jika data ada, false jika null
   } catch (error) {
     console.error('Database Error:', error);
-    throw new Error('Failed to check if nama exists.');
+    return false; // Kembalikan false alih-alih melempar exception agar register form tidak crash
   }
 }
 
 // Insert Jamaah Baru ke data_jamaah
-export async function insertNewJamaah(jamaahData: {
+export async function insertNewJamaah(payload: {
   nama: string;
   kontak: number;
   jenis_kelamin: string;
+  pin: number; // Tambahkan parameter PIN
 }) {
   try {
     const { data, error } = await supabase
       .from('data_jamaah')
-      .insert({
-        nama: jamaahData.nama,
-        kontak: jamaahData.kontak,
-        jenis_kelamin: jamaahData.jenis_kelamin
-      })
-      .select('*')
+      .insert([
+        {
+          nama: payload.nama,
+          kontak: payload.kontak,
+          jenis_kelamin: payload.jenis_kelamin,
+          pin: payload.pin, // Simpan PIN ke database
+        },
+      ])
+      .select()
       .single();
+
     if (error) {
-      console.error('Error insert jamaah:', error);
-      return { success: false, message: 'Gagal mendaftarkan jamaah baru.' };
+      console.error('Error insert data jamaah:', error);
+      return { success: false, message: 'Gagal menambahkan jamaah.' };
     }
 
-    return {
-      success: true,
-      message: 'Pendaftaran berhasil!',
-      jamaah: data
-    };
+    return { success: true, jamaah: data };
   } catch (error) {
-    console.error('Error pada insertNewJamaah:', error);
-    throw new Error('Failed to insert new jamaah.');
+    console.error('Error insertNewJamaah:', error);
+    return { success: false, message: 'Terjadi kesalahan sistem.' };
   }
 }
 

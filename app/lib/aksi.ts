@@ -26,9 +26,10 @@ export async function authenticate(
   }
 }
 
-export async function daftarJamaah(formData:{nama: string, kontak: number, jenis_kelamin: string}) {
+export async function daftarJamaah(formData:{nama: string, kontak: number, jenis_kelamin: string, pin?: number}) {
   const namaClean = formData.nama.trim();
     const kontakClean = formData.kontak.toString().trim();
+    const pinClean = Number(formData.pin ?? 0);
 
     if (!namaClean || !kontakClean) {
       return { success: false, message: 'Nama dan Nomor WA wajib diisi.' };
@@ -47,7 +48,8 @@ export async function daftarJamaah(formData:{nama: string, kontak: number, jenis
     const insertResult = await insertNewJamaah({
       nama: namaClean,
       kontak: parseInt(kontakClean),
-      jenis_kelamin: formData.jenis_kelamin
+      jenis_kelamin: formData.jenis_kelamin,
+      pin: pinClean,
     });
     return insertResult;
 }
@@ -56,13 +58,28 @@ export async function authenticateMobile(
   prevState: string | undefined,
   formData: FormData,
 ) {
+  const identitas = formData.get('identitas')?.toString().trim();
+  const pin = formData.get('pin')?.toString().trim(); // Ambil 'pin' bukan 'password'
+  const redirectTo = formData.get('redirectTo')?.toString() || '/mobile';
+
+  console.log('Identitas:', identitas);
+  console.log('PIN:', pin);
+
+  if (!identitas || !pin) {
+    return 'No. WhatsApp / Nama dan PIN wajib diisi.';
+  }
+
   try {
-    await signIn('jamaah-credentials', formData);
+    await signIn('jamaah-credentials', {
+      identitas,
+      pin,
+      redirectTo,
+    });
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
         case 'CredentialsSignin':
-          return 'Data jamaah tidak ditemukan. Silakan periksa kembali.';
+          return 'No. WhatsApp / Nama atau PIN salah.';
         default:
           return 'Terjadi kesalahan saat masuk.';
       }
