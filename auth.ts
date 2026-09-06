@@ -26,22 +26,17 @@ export async function getPanitiaByNamaPengguna(nama_pengguna: string): Promise<P
   }
 }
 
-export async function getJamaahByIdentitas(identitas: string) {
+export async function getJamaahByIdentitas(identitas: number) {
   try {
-    const cleanInput = identitas.trim();
-    if (!cleanInput) return null;
+    if (!identitas) return null;
 
-    const isNumeric = /^\d+$/.test(cleanInput);
-    let query = supabase.from('data_jamaah').select('*');
-
-    if (isNumeric) {
-      query = query.eq('kontak', Number(cleanInput));
-    } else {
-      query = query.ilike('nama', `%${cleanInput}%`);
-    }
-
-    // Gunakan limit(1) agar tidak crash jika terdapat nama ganda
-    const { data, error } = await query.limit(1).maybeSingle();
+    // Mencari baris yang kontak-nya SAMA DENGAN identitas ATAU no_rek-nya SAMA DENGAN identitas
+    const { data, error } = await supabase
+      .from('data_jamaah')
+      .select('*')
+      .or(`kontak.eq.${identitas},no_rek.eq.${identitas}`)
+      .limit(1)
+      .maybeSingle();
 
     if (error) {
       console.error('Failed to fetch jamaah:', error);
@@ -95,10 +90,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       id: 'jamaah-credentials',
       name: 'Jamaah Credentials',
       async authorize(credentials) {
-        const identitas = credentials?.identitas as string;
+        const identitas = credentials?.identitas as number;
         if (!identitas) return null;
 
-        const user = await getJamaahByIdentitas(identitas);
+        const identitasInput = credentials?.identitas;
+        const numericIdentitas = Number(identitasInput);
+
+        if (isNaN(numericIdentitas)) return null;
+
+        const user = await getJamaahByIdentitas(numericIdentitas);
         if (!user) return null;
 
         return {
