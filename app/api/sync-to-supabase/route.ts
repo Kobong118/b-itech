@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     const body: DynamicSyncPayload = JSON.parse(textData);
     const { target_table, data } = body;
 
-    if (!target_table || !data || !data.id) {
+    if (!target_table || !data ) {
       return NextResponse.json({ error: 'Payload JSON tidak lengkap' }, { status: 400 });
     }
 
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     const { data: existingRows } = await supabase
       .from(target_table)
       .select('updated_at')
-      .eq('id', sanitizedData.id);
+      .eq('no_rek', sanitizedData.no_rek);
 
     if (existingRows && existingRows.length > 0) {
       const existingData = existingRows[0];
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
     // 2. UPSERT DATA YANG SUDAH DIBERSIHKAN (sanitizedData)
     const { error } = await supabase
       .from(target_table)
-      .upsert(sanitizedData, { onConflict: 'id' });
+      .upsert(sanitizedData, { onConflict: 'no_rek' });
 
     if (error) throw error;
 
