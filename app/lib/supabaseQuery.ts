@@ -1,6 +1,7 @@
 import { supabase } from './supabaseClient';
 import { Database } from '@/types/database.types';
 import { formatCurrency, formatDateToLocal } from './utils'; // Menggunakan formatCurrency bawaan project
+import { generateRawNoRek, generateRawPin } from './utils'; // Fungsi pembuat no_rek dan pin
 
 export type TableName = keyof Database['public']['Tables'];
 export type TableRow<T extends TableName> = Database['public']['Tables'][T]['Row'];
@@ -377,11 +378,64 @@ export async function checkNamaExists(nama: string) {
   }
 }
 
+// 2. Helper untuk memastikan Rekening Unik (Pengecekan ke DB)
+export async function getUniqueNoRek(): Promise<string> {
+  let noRek = await generateRawNoRek();
+  let isUnique = false;
+  let attempts = 0;
+
+  while (!isUnique && attempts < 10) {
+    // Cek apakah no_rek sudah ada di database
+    const { data } = await supabase
+      .from('data_jamaah')
+      .select('no_rek')
+      .eq('no_rek', noRek)
+      .maybeSingle();
+
+    if (!data) {
+      isUnique = true; // Belum ada di DB, aman digunakan
+    } else {
+      noRek = await generateRawNoRek(); // Sudah ada, generate ulang!
+      attempts++;
+    }
+  }
+
+  return noRek;
+}
+
+// 3. Helper untuk memastikan PIN Unik (Pengecekan ke DB)
+export async function getUniquePin(): Promise<string> {
+  let pin = await generateRawPin();
+  let isUnique = false;
+  let attempts = 0;
+
+  while (!isUnique && attempts < 10) {
+    const { data } = await supabase
+      .from('data_jamaah')
+      .select('pin')
+      .eq('pin', pin)
+      .maybeSingle();
+
+    if (!data) {
+      isUnique = true;
+    } else {
+      pin = await generateRawPin();
+      attempts++;
+    }
+  }
+
+  return pin;
+}
+
 // Insert Jamaah Baru ke data_jamaah
 export async function insertNewJamaah(jamaahData: {
   nama: string;
-  kontak: number;
+  kontak: string;
   jenis_kelamin: string;
+  no_rek: string;
+  pin: string;
+  role: string; 
+  fcm_token?: string; // Optional, jika ingin menyimpan token FCM saat pendaftaran
 }) {
   try {
     const { data, error } = await supabase
@@ -389,7 +443,11 @@ export async function insertNewJamaah(jamaahData: {
       .insert({
         nama: jamaahData.nama,
         kontak: jamaahData.kontak,
-        jenis_kelamin: jamaahData.jenis_kelamin
+        jenis_kelamin: jamaahData.jenis_kelamin,
+        no_rek: jamaahData.no_rek,
+        pin: jamaahData.pin,
+        role: jamaahData.role,
+        fcm_token: jamaahData.fcm_token, // Optional
       })
       .select('*')
       .single();
@@ -409,31 +467,27 @@ export async function insertNewJamaah(jamaahData: {
   }
 }
 
-export async function getJamaahIdByIdentitas(identitas: string) {
+export async function getJamaahByNoRek(noRek: string) {
   try {
-    const cleanInput = identitas.trim();
-    if (!cleanInput) return null;
+    if (!noRek) return null;
 
-    const isNumeric = /^\d+$/.test(cleanInput);
-    let query = supabase.from('data_jamaah').select('id');
+    const noRekClean = noRek.trim();
 
-    if (isNumeric) {
-      query = query.eq('kontak', Number(cleanInput));
-    } else {
-      query = query.ilike('nama', `%${cleanInput}%`);
-    }
-
-    // Batasi ke 1 baris
-    const { data, error } = await query.limit(1).maybeSingle();
+    const { data, error } = await supabase
+      .from('data_jamaah')
+      .select('*')
+      .eq('no_rek', noRekClean)
+      .limit(1)
+      .maybeSingle();
 
     if (error) {
-      console.error('Error getJamaahIdByIdentitas:', error);
+      console.error('Failed to fetch jamaah:', error);
       return null;
     }
 
-    return data?.id ? Number(data.id) : null;
+    return data;
   } catch (error) {
-    console.error('Database Error:', error);
+    console.error('Error fetching jamaah data:', error);
     return null;
   }
 }

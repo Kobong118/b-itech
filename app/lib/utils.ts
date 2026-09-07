@@ -67,3 +67,15 @@ export const generatePagination = (currentPage: number, totalPages: number) => {
     totalPages,
   ];
 };
+
+// 1. Helper generator no_rek dan pin
+export async function generateRawNoRek(): Promise<string> {
+  const prefix = '118'; // Prefix tetap
+  const dateStr = new Date().toISOString().slice(2, 10).replace(/-/g, ''); // YYMMDD
+  const randomNum = Math.floor(1000 + Math.random() * 9000); // 4 digit
+  return `${prefix}${dateStr}${randomNum}`;
+}
+
+export async function generateRawPin(): Promise<string> {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}

@@ -86,15 +86,18 @@ export default function LoginForm() {
       {!isRegister ? (
         <form action={loginAction} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="identitas">
-              No. WhatsApp / No. Rekening
+            <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="noRek">
+              No. Rekening
             </label>
             <input
-              id="identitas"
-              name="identitas"
-              type="number"
+              id="noRek"
+              name="noRek"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={13}
               required
-              placeholder="Contoh: No Whatsapp 8123456789 atau No Rekening 1234567890"
+              placeholder="Masukan 13 digit nomor rekening"
               className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
             />
           </div>
@@ -110,6 +113,32 @@ export default function LoginForm() {
           >
             {isLoginPending ? 'Memproses...' : 'Masuk Aplikasi'}
           </button>
+
+          <div className="pt-2 text-center">
+            <p className="text-xs text-slate-500">
+              Bagi jamaah yang telah daftar melalui Panitia, silahkan masukkan nomor rekening. Butuh bantuan? {' '}
+              <a
+                href={`https://wa.me/6281220206315?text=${encodeURIComponent(
+                  "Halo, saya ingin mendapatkan informasi lebih lanjut."
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-3 rounded-xl bg-green-500 px-5 py-3 font-medium text-white shadow-sm transition-all hover:bg-green-600 hover:shadow-md active:scale-[0.98]"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="h-5 w-5 transition-transform group-hover:scale-110"
+                >
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.372-.025-.521-.075-.149-.669-1.611-.916-2.206-.242-.579-.487-.5-.669-.51-.173-.008-.372-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.262.489 1.694.626.712.227 1.36.195 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+                  <path d="M20.52 3.449A11.817 11.817 0 0 0 12.052.003C5.495.003.16 5.338.157 11.895c0 2.09.546 4.13 1.582 5.93L.09 23.91l6.224-1.633a11.84 11.84 0 0 0 5.738 1.46h.005c6.557 0 11.892-5.335 11.895-11.892a11.81 11.81 0 0 0-3.432-8.396zM12.057 21.73h-.004a9.83 9.83 0 0 1-5.01-1.372l-.36-.214-3.694.969.986-3.604-.234-.37a9.83 9.83 0 0 1-1.51-5.244c.003-5.445 4.436-9.878 9.882-9.878 2.64.001 5.12 1.03 6.985 2.897a9.84 9.84 0 0 1 2.89 6.994c-.002 5.446-4.435 9.878-9.881 9.878z" />
+                </svg>
+
+                <span>Chat via WhatsApp</span>
+              </a>
+            </p>
+          </div>
 
           <div className="pt-2 text-center">
             <p className="text-xs text-slate-500">
@@ -146,7 +175,7 @@ export default function LoginForm() {
             </label>
             <input
               name="kontak"
-              type="tel"
+              type="text"
               required
               placeholder="08123456789"
               className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"

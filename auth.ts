@@ -5,6 +5,7 @@ import { z } from 'zod';
 import type { Panitia } from '@/app/lib/definitions';
 import bcrypt from 'bcrypt';
 import { supabase } from '@/app/lib/supabaseClient';
+import {getJamaahByNoRek} from '@/app/lib/supabaseQuery';
 
 export async function getPanitiaByNamaPengguna(nama_pengguna: string): Promise<Panitia | undefined> {
   try {
@@ -26,29 +27,6 @@ export async function getPanitiaByNamaPengguna(nama_pengguna: string): Promise<P
   }
 }
 
-export async function getJamaahByIdentitas(identitas: number) {
-  try {
-    if (!identitas) return null;
-
-    // Mencari baris yang kontak-nya SAMA DENGAN identitas ATAU no_rek-nya SAMA DENGAN identitas
-    const { data, error } = await supabase
-      .from('data_jamaah')
-      .select('*')
-      .or(`kontak.eq.${identitas},no_rek.eq.${identitas}`)
-      .limit(1)
-      .maybeSingle();
-
-    if (error) {
-      console.error('Failed to fetch jamaah:', error);
-      return null;
-    }
-
-    return data;
-  } catch (error) {
-    console.error('Error fetching jamaah data:', error);
-    return null;
-  }
-}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -90,15 +68,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       id: 'jamaah-credentials',
       name: 'Jamaah Credentials',
       async authorize(credentials) {
-        const identitas = credentials?.identitas as number;
-        if (!identitas) return null;
+        const noRek  = credentials?.noRek?.toString().trim();
 
-        const identitasInput = credentials?.identitas;
-        const numericIdentitas = Number(identitasInput);
+        if (!noRek) return null;
 
-        if (isNaN(numericIdentitas)) return null;
+        const user = await getJamaahByNoRek(noRek);
 
-        const user = await getJamaahByIdentitas(numericIdentitas);
         if (!user) return null;
 
         return {

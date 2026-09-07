@@ -78,10 +78,10 @@ export type Database = {
           fcm_token: string | null
           id: number
           jenis_kelamin: string | null
-          kontak: number | null
+          kontak: string | null
           nama: string
-          no_rek: number | null
-          pin: number | null
+          no_rek: string | null
+          pin: string | null
           role: string | null
           total_tabungan: number | null
           update_at: string | null
@@ -91,10 +91,10 @@ export type Database = {
           fcm_token?: string | null
           id?: number
           jenis_kelamin?: string | null
-          kontak?: number | null
+          kontak?: string | null
           nama?: string
-          no_rek?: number | null
-          pin?: number | null
+          no_rek?: string | null
+          pin?: string | null
           role?: string | null
           total_tabungan?: number | null
           update_at?: string | null
@@ -104,10 +104,10 @@ export type Database = {
           fcm_token?: string | null
           id?: number
           jenis_kelamin?: string | null
-          kontak?: number | null
+          kontak?: string | null
           nama?: string
-          no_rek?: number | null
-          pin?: number | null
+          no_rek?: string | null
+          pin?: string | null
           role?: string | null
           total_tabungan?: number | null
           update_at?: string | null
