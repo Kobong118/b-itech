@@ -27,13 +27,13 @@ export default function CoverSection({ isOpened, guestName, handleOpenInvitation
                 <div className="absolute top-3 right-3 text-cyan-600 text-lg">⭐</div>
                 
                 <span className="inline-block px-4 py-1 rounded-full bg-cyan-50 text-cyan-800 text-xs tracking-widest uppercase mb-4 font-semibold border border-cyan-200">
-                    Peringatan Maulid Nabi SAW
+                    UDANGAN MAULID AKBAR
                 </span>
                 <h1 className="font-serif text-3xl md:text-4xl text-slate-900 mb-2 font-bold leading-tight">
-                    Rasulullah SAW Teladan Utama
+                    MT. Al - Ukhuwwah Daarul Mushthofa
                 </h1>
                 <p className="text-xs tracking-wider text-slate-500 mb-6 font-light">
-                    12 Rabiul Awal 1448 Hijriyah
+                    4 Oktober 2026
                 </p>
 
                 <div className="border-t border-b border-cyan-100 py-4 my-4">

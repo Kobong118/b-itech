@@ -103,7 +103,7 @@ export default function PenceramahSection() {
                         </p>
 
                         <p className="text-slate-300 text-sm italic font-light max-w-md border-t border-slate-800 pt-4 w-full">
-                            &ldquo;{item.quote}&rdquo;
+                            {/* &ldquo;{item.quote}&rdquo; */}
                         </p>
                     </motion.div>
                 ))}
