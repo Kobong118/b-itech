@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 
+const URL_DOMAIN = 'https://b-itech.vercel.app'; // 👈 Sesuaikan dengan domain Vercel Anda
+
 // Konfigurasi Open Graph untuk pratinjau media sosial khusus halaman undangan
 export const metadata: Metadata = {
   title: 'Undangan Maulid Nabi SAW 1448 H',
@@ -11,9 +13,9 @@ export const metadata: Metadata = {
     siteName: 'B-Itech',
     images: [
       {
-        url: '/maulid/thumbnail.webp', // Pastikan gambar ada di folder public/images/
+        url: `${URL_DOMAIN}/maulid/thumbnail.webp`, // Pastikan gambar ada di folder public/images/
         width: 1200,
-        height: 630,
+        height: "auto",
         alt: 'Thumbnail Undangan Maulid Nabi',
       },
     ],
@@ -24,7 +26,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Undangan Maulid Nabi SAW 1448 H',
     description: 'Silakan buka tautan ini untuk melihat detail acara.',
-    images: ['/maulid/thumbnail.webp'],
+    images: [`${URL_DOMAIN}/maulid/thumbnail.webp`],
   },
 };
 
