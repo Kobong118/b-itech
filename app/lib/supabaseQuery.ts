@@ -1,7 +1,9 @@
+'use server';
 import { supabase } from './supabaseClient';
 import { Database } from '@/types/database.types';
 import { formatCurrency, formatDateToLocal } from './utils'; // Menggunakan formatCurrency bawaan project
 import { generateRawNoRek, generateRawPin } from './utils'; // Fungsi pembuat no_rek dan pin
+import { revalidatePath } from 'next/cache';
 
 export type TableName = keyof Database['public']['Tables'];
 export type TableRow<T extends TableName> = Database['public']['Tables'][T]['Row'];
@@ -177,7 +179,7 @@ export async function fetchCardData() {
     // B. Jumlah penabung aktif (jamaah unik yang pernah menabung)
     const activePenabungPromise = supabase
       .from('ctt_tabungan')
-      .select('id_name');
+      .select('no_rek');
 
     // C. Ambil seluruh data setor_tunai dan setor_e_walet untuk akumulasi debit/credit
     // (Asumsi: Setor Tunai = Credit/Cash, Setor E-Wallet = Debit/Digital)
@@ -203,7 +205,7 @@ export async function fetchCardData() {
     const numberOfJamaah = jamaahRes.count ?? 0;
 
     // Jumlah Penabung Aktif (dihitung berdasarkan id_name yang unik)
-    const uniquePenabung = new Set(penabungRes.data?.map((item) => item.id_name));
+    const uniquePenabung = new Set(penabungRes.data?.map((item) => item.no_rek));
     const numberOfActivePenabung = uniquePenabung.size;
 
     // Akumulasi Total Tabungan (Debit & Credit)
@@ -491,3 +493,104 @@ export async function getJamaahByNoRek(noRek: string) {
     return null;
   }
 }
+
+// undangan maulid-1448
+// Inisialisasi Supabase client (Server-side)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+
+
+export async function getComments() {
+if (!supabaseUrl || !supabaseAnonKey) return []
+const { data, error } = await supabase
+.from('guestbook')
+.select('*')
+.order('created_at', { ascending: false })
+
+if (error) {
+    console.error('Error fetching guestbook:', error)
+    return []
+}
+return data || []
+
+
+}
+
+// Server Action untuk Menambah RSVP & Buku Tamu
+export async function addGuestbookEntry(formData: FormData) {
+'use server'
+const name = formData.get('name') as string
+const status = formData.get('status') as string
+const message = formData.get('message') as string
+
+if (!name || !message) return
+
+await supabase.from('guestbook').insert([
+  { name, status, message, created_at: new Date().toISOString() }
+])
+console.log(`RSVP & Buku Tamu berhasil ditambahkan: ${name} - ${status} - ${message}`)
+revalidatePath('/undangan/maulid-1448');
+
+}
+
+export async function addHadiahConfirmation(formData: FormData) {
+'use server';
+    try {
+        const name = formData.get('name')?.toString() || '';
+        const amount = formData.get('amount')?.toString() || '0';
+        const latitude = formData.get('latitude')?.toString() || null;
+        const longitude = formData.get('longitude')?.toString() || null;
+
+        // Validasi data dasar
+        if (!name || !amount) {
+            throw new Error('Nama dan nominal wajib diisi!');
+        }
+
+        // Simpan ke tabel database Supabase (sesuaikan nama tabel Anda, misal: 'donatur')
+        const { data, error } = await supabase
+            .from('donatur') // 👈 Ganti dengan nama tabel Anda di Supabase
+            .insert([
+                {
+                    nama: name,
+                    nominal: parseFloat(amount),
+                    latitude: latitude ? parseFloat(latitude) : null,
+                    longitude: longitude ? parseFloat(longitude) : null,
+                    created_at: new Date().toISOString(),
+                }
+            ]);
+
+        if (error) {
+            console.error('Gagal menyimpan konfirmasi hadiah:', error.message);
+            throw error;
+        }
+
+        // Lakukan revalidate path agar halaman memperbarui data jika ditampilkan di list
+        revalidatePath('/undangan/maulid-1448');
+
+        return { success: true, message: 'Konfirmasi hadiah berhasil dikirim!' };
+    } catch (err: any) {
+        console.error('Error on addHadiahConfirmation:', err);
+        return { success: false, message: err.message };
+    }
+}
+
+// 2. 👇 FUNGSI BARU UNTUK MENGAMBIL LIST DAFTAR HADIAH (Pemisahan Server Logic)
+export async function getGiftConfirmations() {
+    try {
+        const { data, error } = await supabase
+            .from('donatur')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Gagal mengambil data gift:', error.message);
+            return [];
+        }
+
+        return data || [];
+    } catch (err) {
+        console.error('Error on getGiftConfirmations:', err);
+        return [];
+    }
+}
+// end undangan maulid-1448

@@ -7,6 +7,8 @@
     "genTypesSupabase": "supabase gen types typescript --project-id ${SUPABASE_PROJECT_ID}  > ./types/database.types.ts"
   },
   "dependencies": {
+    "@capacitor/core": "^8.5.0",
+    "@capacitor/push-notifications": "^8.1.2",
     "@heroicons/react": "^2.2.0",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.3",
@@ -14,6 +16,7 @@
     "autoprefixer": "10.4.20",
     "bcrypt": "^5.1.1",
     "clsx": "^2.1.1",
+    "framer-motion": "^13.4.4",
     "next": "latest",
     "next-auth": "5.0.0-beta.25",
     "postcss": "8.5.1",
@@ -22,9 +25,7 @@
     "react-dom": "latest",
     "tailwindcss": "3.4.17",
     "use-debounce": "^10.0.6",
-    "zod": "^3.25.17",    
-    "@capacitor/push-notifications": "^8.1.2",
-    "@capacitor/core": "^8.5.0"
+    "zod": "^3.25.17"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",

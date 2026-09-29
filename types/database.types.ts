@@ -18,11 +18,10 @@ export type Database = {
         Row: {
           e_walet_app: string | null
           id: number
-          id_name: number | null
           ket_e_walet: string | null
           keterangan: string | null
           nama: string | null
-          no_rek: number | null
+          no_rek: string
           setor_e_walet: number | null
           setor_tunai: number | null
           tanggal: string
@@ -34,11 +33,10 @@ export type Database = {
         Insert: {
           e_walet_app?: string | null
           id?: number
-          id_name?: number | null
           ket_e_walet?: string | null
           keterangan?: string | null
           nama?: string | null
-          no_rek?: number | null
+          no_rek: string
           setor_e_walet?: number | null
           setor_tunai?: number | null
           tanggal?: string
@@ -50,11 +48,10 @@ export type Database = {
         Update: {
           e_walet_app?: string | null
           id?: number
-          id_name?: number | null
           ket_e_walet?: string | null
           keterangan?: string | null
           nama?: string | null
-          no_rek?: number | null
+          no_rek?: string
           setor_e_walet?: number | null
           setor_tunai?: number | null
           tanggal?: string
@@ -65,11 +62,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "ctt_tabungan_id_name_fkey"
-            columns: ["id_name"]
-            isOneToOne: false
+            foreignKeyName: "ctt_tabungan_no_rek_fkey"
+            columns: ["no_rek"]
+            isOneToOne: true
             referencedRelation: "data_jamaah"
-            referencedColumns: ["id"]
+            referencedColumns: ["no_rek"]
           },
         ]
       }
@@ -112,6 +109,57 @@ export type Database = {
           total_tabungan?: number | null
           update_at?: string | null
           update_by?: string | null
+        }
+        Relationships: []
+      }
+      donatur: {
+        Row: {
+          created_at: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          nama: string | null
+          nominal: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          nama?: string | null
+          nominal?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          nama?: string | null
+          nominal?: number | null
+        }
+        Relationships: []
+      }
+      guestbook: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          name: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at: string
+          id?: string
+          message?: string | null
+          name?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          name?: string | null
+          status?: string | null
         }
         Relationships: []
       }
