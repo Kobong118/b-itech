@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     default: 'B-Itech',
   },
   description: 'Aplikasi web Tour ADM & IT Al-Ukhuwwah Daarul Mushthofa.',
-  metadataBase: new URL('https://b-itech.vercel.app'),
+  metadataBase: new URL('https://b-itech.vercel.app')
 };
  
 export default function RootLayout({
