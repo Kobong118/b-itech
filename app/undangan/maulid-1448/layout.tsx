@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     siteName: 'B-Itech',
     images: [
       {
-        url: `${URL_DOMAIN}/maulid/thumbnail.webp`, // Pastikan gambar ada di folder public/images/
+        url: `${URL_DOMAIN}/maulid/thumbnail.jpeg`, // Pastikan gambar ada di folder public/images/
         width: 1200,
         height: "auto",
         alt: 'Thumbnail Undangan Maulid Nabi',
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Undangan Maulid Nabi SAW 1448 H',
     description: 'Silakan buka tautan ini untuk melihat detail acara.',
-    images: [`${URL_DOMAIN}/maulid/thumbnail.webp`],
+    images: [`${URL_DOMAIN}/maulid/thumbnail.jpeg`],
   },
 };
 
