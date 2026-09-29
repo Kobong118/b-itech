@@ -104,7 +104,6 @@ export async function fetchLatestTabungan() {
       .from('ctt_tabungan')
       .select(`
         id,
-        id_name,
         setor_tunai,
         setor_e_walet,
         tarik_tunai,
@@ -133,7 +132,7 @@ export async function fetchLatestTabungan() {
         ? item.data_jamaah[0]
         : item.data_jamaah;
 
-      const jamaahKey = item.id_name || jamaahObj?.nama || 'unknown';
+      const jamaahKey = item.no_rek || jamaahObj?.nama || 'unknown';
 
       // Hitung perubahan pada transaksi ini
       const totalSetor = Number(item.setor_tunai || 0) + Number(item.setor_e_walet || 0);
@@ -146,7 +145,6 @@ export async function fetchLatestTabungan() {
 
       return {
         id: item.id,
-        id_name: item.id_name,
         nama: jamaahObj?.nama || 'Tanpa Nama',
         rek: jamaahObj?.no_rek || '-',
         jenis_kelamin: jamaahObj?.jenis_kelamin || '',
@@ -254,7 +252,6 @@ export async function fetchFilteredTabungan(
       .from('ctt_tabungan')
       .select(`
         id,
-        id_name,
         setor_tunai,
         setor_e_walet,
         tarik_tunai,
@@ -293,8 +290,7 @@ export async function fetchFilteredTabungan(
 
       return {
         id: item.id,
-        id_name: item.id_name,
-        nama: jamaahObj?.nama || item.id_name || 'Tanpa Nama',
+        nama: jamaahObj?.nama || item.no_rek|| 'Tanpa Nama',
         kontak: jamaahObj?.kontak || '-',
         jenis_kelamin: jamaahObj?.jenis_kelamin || '',
         setor_tunai: item.setor_tunai,
