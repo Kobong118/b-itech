@@ -35,7 +35,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
       type: 'website',
       images: [
         {
-          url: `${URL_DOMAIN}/maulid/thumbnail.jpeg`,
+          url: `${URL_DOMAIN}/maulid/thumnail.jpeg`,
           width: 1200,
           height: 630, // 👈 Diubah dari "auto" menjadi angka (number) agar valid secara type dan tidak error
           alt: `Thumbnail Undangan Resmi untuk ${guestName}`,
@@ -46,7 +46,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
       card: 'summary_large_image',
       title: `Undangan Resmi Maulid Nabi Muhammad SAW 1448 H - ${guestName}`,
       description: `Kepada Yth. ${guestName} - Silakan buka tautan ini untuk melihat detail acara.`,
-      images: [`${URL_DOMAIN}/maulid/thumbnail.jpeg`],
+      images: [`${URL_DOMAIN}/maulid/thumnail.jpeg`],
     },
   };
 }
