@@ -10,31 +10,31 @@ const listPenceramah = [
         role: "Muballigh",
         institution: "Pondok Pesantren Islam Internasional Terpadu Asy-Syifaa Wal Mahmuudiyyah ",
         image: "/maulid/abuya.png", // Ganti dengan path foto di folder public Anda
-        quote: "Mutiara hikmah dan siraman rohani untuk mempererat ukhuwah Islamiyah."
+        quote: ""
     },{
         name: "KH. Abu Najib",
         role: "Muballigh",
         institution: "Ponpes MADINAH Cimaung",
         image: "/maulid/ustdAbu.png", // Ganti dengan path foto di folder public Anda
-        quote: "Mutiara hikmah dan siraman rohani untuk mempererat ukhuwah Islamiyah."
+        quote: ""
     },{
         name: "KH. Agus Hasanuddin",
         role: "Muballigh",
         institution: "Saung Mulud Al Karomah Ciparay",
         image: "/maulid/ustdAgus.png", // Ganti dengan path foto di folder public Anda
-        quote: "Mutiara hikmah dan siraman rohani untuk mempererat ukhuwah Islamiyah."
+        quote: ""
     },{
         name: "KH.Muhammad Robi",
         role: "Pembacaan Maulid",
         institution: "Jelegong",
         image: "/maulid/ustdRobi.png", // Ganti dengan path foto di folder public Anda
-        quote: "Mutiara hikmah dan siraman rohani untuk mempererat ukhuwah Islamiyah."
+        quote: ""
     },{
         name: "Al Ustadz Fuad Al Furqon",
         role: "Qori",
         institution: "Cicalengka",
         image: "/maulid/ustdFuad.png", // Ganti dengan path foto di folder public Anda
-        quote: "Mutiara hikmah dan siraman rohani untuk mempererat ukhuwah Islamiyah."
+        quote: ""
     },
     // Anda bisa menambahkan objek penceramah lain di sini jika ada lebih dari satu
 ];
