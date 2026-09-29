@@ -25,7 +25,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     title: `Undangan Maulid Nabi Muhammad SAW 1448 H - ${guestName}`,
     description: `Kepada Yth. Bapak/Ibu/Saudara/i: ${guestName}. Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Anda berkenan hadir.`,
     openGraph: {
-      title: `Undangan Resmi Maulid Nabi SAW 1448 H`,
+      title: `Undangan Maulid Nabi Muhammad SAW 1448 H`,
       description: `Kepada Yth. ${guestName} - Silakan buka tautan ini untuk melihat detail acara.`,
       url: resolvedParams?.to 
         ? `${URL_DOMAIN}/undangan/maulid-1448?to=${resolvedParams.to}` 
@@ -38,13 +38,13 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
           url: `${URL_DOMAIN}/maulid/thumnail.jpeg`,
           width: 1200,
           height: 630, // 👈 Diubah dari "auto" menjadi angka (number) agar valid secara type dan tidak error
-          alt: `Thumbnail Undangan Resmi untuk ${guestName}`,
+          alt: `Undangan Maulid Nabi Muhammad SAW 1448 H ${guestName}`,
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `Undangan Resmi Maulid Nabi Muhammad SAW 1448 H - ${guestName}`,
+      title: `Undangan Maulid Nabi Muhammad SAW 1448 H - ${guestName}`,
       description: `Kepada Yth. ${guestName} - Silakan buka tautan ini untuk melihat detail acara.`,
       images: [`${URL_DOMAIN}/maulid/thumnail.jpeg`],
     },
