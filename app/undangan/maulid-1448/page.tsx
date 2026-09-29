@@ -7,6 +7,7 @@ interface PageProps {
 }
 const URL_DOMAIN = 'https://b-itech.vercel.app'; // 👈 Sesuaikan dengan domain Vercel Anda
 
+
 // 1. Fungsi Helper untuk merapikan format nama tamu dari URL (Contoh: "budi-utomo" -> "Budi Utomo")
 function formatGuestName(slug: string): string {
   return decodeURIComponent(slug)
@@ -14,32 +15,42 @@ function formatGuestName(slug: string): string {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
+
+// 2. Mengubah Metadata Statis Menjadi Dinamis dengan generateMetadata
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
   const resolvedParams = await searchParams;
   const guestName = resolvedParams?.to ? formatGuestName(resolvedParams.to) : 'Tamu Undangan';
 
   return {
-    title: `Undangan Maulid Nabi SAW 1448 H - ${guestName}`,
-    description: `Spesial Kepada Yth. Bapak/Ibu/Saudara/i: ${guestName}. Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Anda berkenan hadir.`,
+    title: `Undangan Maulid Nabi Muhammad SAW 1448 H - ${guestName}`,
+    description: `Kepada Yth. Bapak/Ibu/Saudara/i: ${guestName}. Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Anda berkenan hadir.`,
     openGraph: {
       title: `Undangan Resmi Maulid Nabi SAW 1448 H`,
-      description: `Spesial Kepada Yth. ${guestName} - Silakan buka tautan ini untuk melihat detail acara.`,
+      description: `Kepada Yth. ${guestName} - Silakan buka tautan ini untuk melihat detail acara.`,
       url: resolvedParams?.to 
         ? `${URL_DOMAIN}/undangan/maulid-1448?to=${resolvedParams.to}` 
         : `${URL_DOMAIN}/undangan/maulid-1448`,
       siteName: 'B-Itech',
       locale: 'id_ID',
       type: 'website',
-      // ⚠️ HAPUS PROPERTI "images" DI SINI. Next.js akan mengisinya otomatis via opengraph-image.tsx
+      images: [
+        {
+          url: `${URL_DOMAIN}/maulid/thumbnail.jpeg`,
+          width: 1200,
+          height: 630, // 👈 Diubah dari "auto" menjadi angka (number) agar valid secara type dan tidak error
+          alt: `Thumbnail Undangan Resmi untuk ${guestName}`,
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `Undangan Resmi Maulid Nabi SAW 1448 H - ${guestName}`,
-      description: `Spesial Kepada Yth. ${guestName} - Silakan buka tautan ini untuk melihat detail acara.`,
-      // ⚠️ HAPUS PROPERTI "images" DI SINI JUGA
+      title: `Undangan Resmi Maulid Nabi Muhammad SAW 1448 H - ${guestName}`,
+      description: `Kepada Yth. ${guestName} - Silakan buka tautan ini untuk melihat detail acara.`,
+      images: [`${URL_DOMAIN}/maulid/thumbnail.jpeg`],
     },
   };
 }
+
 
 export default async function Page({ searchParams }: PageProps) {
   // Unwrapping searchParams menggunakan await
