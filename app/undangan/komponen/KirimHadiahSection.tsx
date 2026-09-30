@@ -146,7 +146,18 @@ export default function KirimHadiahSection({ guestName = '', addHadiahConfirmati
                     <form
                         action={async (formData) => {
                             if (addHadiahConfirmation) {
-                                await addHadiahConfirmation(formData);
+                                // 👇 Menangkap hasil balasan dari Server Action
+                                const result = await addHadiahConfirmation(formData);
+
+                                if (result) {
+                                    if (!result.success) {
+                                        // Tampilkan pesan error validasi server
+                                        alert(result.message || 'Terjadi kesalahan.');
+                                    } else {
+                                        // Tampilkan pesan sukses
+                                        alert(result.message || 'Konfirmasi berhasil dikirim!');
+                                    }
+                                }
                             }
                         }}
                         onSubmit={(e) => {
@@ -187,7 +198,6 @@ export default function KirimHadiahSection({ guestName = '', addHadiahConfirmati
                                 required
                                 placeholder="Contoh: 100000"
                                 onKeyDown={(e) => {
-                                    // Mencegah tombol 'e', 'E', '+', '-', '.', dan ',' agar tidak bisa diketik
                                     if (['e', 'E', '+', '-', '.', ','].includes(e.key)) {
                                         e.preventDefault();
                                     }

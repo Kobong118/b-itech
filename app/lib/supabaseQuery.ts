@@ -529,44 +529,75 @@ revalidatePath('/undangan/maulid-1448');
 
 }
 
-export async function addHadiahConfirmation(formData: FormData) {
-'use server';
-    try {
-        const name = formData.get('name')?.toString() || '';
-        const amount = formData.get('amount')?.toString() || '0';
-        const latitude = formData.get('latitude')?.toString() || null;
-        const longitude = formData.get('longitude')?.toString() || null;
 
-        // Validasi data dasar
-        if (!name || !amount) {
-            throw new Error('Nama dan nominal wajib diisi!');
+export async function addHadiahConfirmation(formData: FormData) {
+    try {
+        const rawName = formData.get('name')?.toString() || '';
+        const rawAmount = formData.get('amount')?.toString() || '0';
+        const rawLatitude = formData.get('latitude')?.toString() || '';
+        const rawLongitude = formData.get('longitude')?.toString() || '';
+
+        // 1. Sanitasi & Validasi Nama
+        const name = rawName.trim();
+        if (!name || name.length < 2 || name.length > 100) {
+            throw new Error('Nama pengirim tidak valid (minimal 2 karakter).');
         }
 
-        // Simpan ke tabel database Supabase (sesuaikan nama tabel Anda, misal: 'donatur')
-        const { data, error } = await supabase
-            .from('donatur') // 👈 Ganti dengan nama tabel Anda di Supabase
+        // 2. Validasi Nominal (Cegah angka negatif, huruf, atau 0)
+        const amount = Number(rawAmount);
+        if (isNaN(amount) || amount <= 0) {
+            throw new Error('Nominal uang tidak valid.');
+        }
+        // Opsional: Batasi batas maksimum nominal agar tidak disalahgunakan untuk spam angka raksasa
+        if (amount > 300000000) { // Contoh batas max 1 Milyar
+            throw new Error('Nominal melebihi batas wajar.');
+        }
+
+        if (amount < 10000) { // Contoh batas max 1 Milyar
+            throw new Error('Nominal kurang dari batas wajar min Rp 10.000.');
+        }
+
+        // 3. Validasi Keberadaan Koordinat GPS
+        if (!rawLatitude || !rawLongitude) {
+            throw new Error('Harap tekan Ambil Koordinat Lokasi Saya terlebih dahulu!');
+        }
+
+        const latitude = parseFloat(rawLatitude);
+        const longitude = parseFloat(rawLongitude);
+
+        // 4. Validasi Keabsahan Rentang Koordinat Geografis (Cegah manipulasi angka acak)
+        if (
+            isNaN(latitude) || latitude < -90 || latitude > 90 ||
+            isNaN(longitude) || longitude < -180 || longitude > 180
+        ) {
+            throw new Error('Koordinat lokasi GPS tidak valid.');
+        }
+
+        // Simpan ke tabel database Supabase
+        const { error } = await supabase
+            .from('donatur') 
             .insert([
                 {
                     nama: name,
-                    nominal: parseFloat(amount),
-                    latitude: latitude ? parseFloat(latitude) : null,
-                    longitude: longitude ? parseFloat(longitude) : null,
+                    nominal: amount,
+                    latitude: latitude,
+                    longitude: longitude,
                     created_at: new Date().toISOString(),
                 }
             ]);
 
         if (error) {
-            console.error('Gagal menyimpan konfirmasi hadiah:', error.message);
-            throw error;
+            console.error('Gagal menyimpan konfirmasi hadiah ke database:', error.message);
+            throw new Error('Gagal menyimpan data ke database. Silakan coba lagi.');
         }
 
-        // Lakukan revalidate path agar halaman memperbarui data jika ditampilkan di list
+        // Lakukan revalidate path agar daftar donatur di halaman langsung terupdate otomatis
         revalidatePath('/undangan/maulid-1448');
 
         return { success: true, message: 'Konfirmasi hadiah berhasil dikirim!' };
     } catch (err: any) {
-        console.error('Error on addHadiahConfirmation:', err);
-        return { success: false, message: err.message };
+        console.error('Error on addHadiahConfirmation:', err.message);
+        return { success: false, message: err.message || 'Terjadi kesalahan pada server.' };
     }
 }
 
