@@ -27,7 +27,7 @@ export default function GiftListSection({ gifts }: GiftListProps) {
 
     return (
         <section className="py-12 px-4 md:px-8 max-w-4xl mx-auto">
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: false }}
@@ -51,7 +51,7 @@ export default function GiftListSection({ gifts }: GiftListProps) {
                     </div>
                 ) : (
                     gifts.map((gift, index) => (
-                        <motion.div 
+                        <motion.div
                             key={gift.id || index}
                             initial={{ opacity: 0, y: 15 }}
                             whileInView={{ opacity: 1, y: 0 }}
@@ -65,8 +65,29 @@ export default function GiftListSection({ gifts }: GiftListProps) {
                                     {gift.nama ? gift.nama.charAt(0).toUpperCase() : '?'}
                                 </div>
                                 <div>
-                                    <h4 className="font-semibold text-slate-800 text-sm md:text-base">
-                                        {gift.nama}
+                                    <h4 className="font-semibold text-slate-800 text-sm md:text-base flex flex-wrap items-center gap-2">
+                                        {/* 1. Menampilkan nama asli tanpa teks di dalam kurung siku */}
+                                        <span>
+                                            {gift.nama ? gift.nama.replace(/\[.*?\]/g, '').trim() : ''}
+                                        </span>
+
+                                        {/* 2. Lencana / Badge Terverifikasi */}
+                                        {gift.nama && gift.nama.includes('[Terverifikasi') && (() => {
+                                            const match = gift.nama.match(/\[Terverifikasi\s*:\s*(.*?)\]/);
+                                            const snValue = match ? match[1] : '';
+                                            return (
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                                    ✅ Terverifikasi {snValue ? `: ${snValue}` : ''}
+                                                </span>
+                                            );
+                                        })()}
+
+                                        {/* 3. Lencana / Badge FAKE / Spam */}
+                                        {gift.nama && gift.nama.includes('[Terbukti FAKE]') && (
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-300">
+                                                ⚠️ Terbukti FAKE
+                                            </span>
+                                        )}
                                     </h4>
                                     <span className="text-[11px] text-slate-400">
                                         {gift.created_at ? new Date(gift.created_at).toLocaleDateString('id-ID', {

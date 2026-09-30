@@ -7,9 +7,15 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
+      const isOnAdmin = nextUrl.pathname.startsWith('/admin/donatur')
       const isOnPanitia = nextUrl.pathname.startsWith('/panitia');
       const isOnMobile = nextUrl.pathname.startsWith('/mobile');
       const isOnMobileLogin = nextUrl.pathname === '/login/mobile';
+
+      if (isOnAdmin) {
+        if (isLoggedIn) return true;
+        return false; // Mengarahkan pengguna yang belum login ke /login
+      }
 
       // 1. Proteksi Rute /panitia
       if (isOnPanitia) {
