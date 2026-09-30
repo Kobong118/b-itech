@@ -31,6 +31,10 @@ export default function EventDetailSection() {
                         📅
                     </div>
 
+                    <p className="font-semibold text-cyan-200 mb-1 text-base md:text-lg">
+                        Khusus Akhwat
+                    </p>
+
                     {/* Judul */}
                     <h3 className="font-serif text-xl font-bold text-slate-100 mb-2 tracking-wide">
                         Siang Hari
@@ -75,6 +79,10 @@ export default function EventDetailSection() {
                     <div className="w-16 h-16 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 flex items-center justify-center text-2xl mb-4 shadow-inner">
                         📅
                     </div>
+
+                    <p className="font-semibold text-cyan-200 mb-1 text-base md:text-lg">
+                        Terbuka Untuk Umum
+                    </p>
 
                     {/* Judul */}
                     <h3 className="font-serif text-xl font-bold text-slate-100 mb-2 tracking-wide">
